@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-User = get_user_model()#Использование user  который указан в settings
+User = get_user_model()
 
 class Category(models.Model):
 
@@ -11,6 +11,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Product(models.Model):
 
@@ -27,6 +28,7 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
+
 class Notebook(Product):
     diagonal = models.CharField(max_length=255, verbose_name='Диагональ')
     display = models.CharField(max_length=255, verbose_name='Тип дисплея')
@@ -34,6 +36,18 @@ class Notebook(Product):
     ram = models.CharField(max_length=255, verbose_name='Оперативная память')
     video = models.CharField(max_length=255, verbose_name='Видеокарта')
     time_without_charge = models.CharField(max_length=255, verbose_name='Время работы аккумулятора')
+
+    def __str__(self):
+        return "{} : {}".format(self.category.name, self.title)
+
+
+class TV(Product):
+
+    diagonal = models.CharField(max_length=255, verbose_name='Диагональ')
+    brand = models.CharField(max_length=255, verbose_name='brand')
+    Color = models.CharField(max_length=255, verbose_name='Цвет')
+    resolutions = models.CharField(max_length=255, verbose_name='Разрешение экрана')
+    display = models.CharField(max_length=255, verbose_name='Тип дисплея')
 
     def __str__(self):
         return "{} : {}".format(self.category.name, self.title)
@@ -54,6 +68,19 @@ class Smartphone(Product):
         return "{} : {}".format(self.category.name, self.title)
 
 
+class Smartwatch(Product):
+    brand = models.CharField(max_length=255, verbose_name='brand')
+    diagonal = models.CharField(max_length=255, verbose_name='Диагональ')
+    resolutions = models.CharField(max_length=255, verbose_name='Разрешение экрана')
+    sensors = models.CharField(max_length=255, verbose_name='Датчики')
+    os = models.CharField(max_length=255, verbose_name='Совместимость с ОС')
+    accum_volume = models.CharField(max_length=255, verbose_name='Объём батарейи')
+    protection = models.CharField(max_length=255, verbose_name='Защита от воды и пыли')
+
+    def __str__(self):
+        return "{} : {}".format(self.category.name, self.title)
+
+
 class  CartProduct(models.Model):
 
     user = models.ForeignKey('Customer', verbose_name='Покупатель',on_delete=models.CASCADE)
@@ -61,7 +88,7 @@ class  CartProduct(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
-    qty = models.PositiveIntegerField(default=1)#Количество
+    qty = models.PositiveIntegerField(default=1)
     final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Общая цена')
 
     def __str__(self):
@@ -74,10 +101,11 @@ class Cart(models.Model):
     owner = models.ForeignKey('Customer', verbose_name='Владелец', on_delete=models.CASCADE)
     product = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')
     total_products = models.PositiveIntegerField(default=0)
-    final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Общая цена')#Окончательная цена корзины
+    final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Общая цена')
 
     def __str__(self):
         return str(self.id)
+
 
 class Customer(models.Model):
 
