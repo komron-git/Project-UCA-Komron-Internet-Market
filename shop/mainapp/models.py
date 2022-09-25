@@ -4,16 +4,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 User = get_user_model()#Использование user  который указан в settings
 
-#**************
-#1Category
-#2Product
-#3CartProduct
-#4Cart
-#5Order
-#***************
-#6Customer
-#7Specification
-
 class Category(models.Model):
 
     name = models.CharField(max_length=255, verbose_name='Имя категории')
@@ -36,6 +26,33 @@ class Product(models.Model):
 
     def __str__(self):
         return self.title
+
+class Notebook(Product):
+    diagonal = models.CharField(max_length=255, verbose_name='Диагональ')
+    display = models.CharField(max_length=255, verbose_name='Тип дисплея')
+    processor_freg = models.CharField(max_length=255, verbose_name='Частота процессора')
+    ram = models.CharField(max_length=255, verbose_name='Оперативная память')
+    video = models.CharField(max_length=255, verbose_name='Видеокарта')
+    time_without_charge = models.CharField(max_length=255, verbose_name='Время работы аккумулятора')
+
+    def __str__(self):
+        return "{} : {}".format(self.category.name, self.title)
+
+class Smartphone(Product):
+
+    diagonal = models.CharField(max_length=255, verbose_name='Диагональ')
+    display = models.CharField(max_length=255, verbose_name='Тип дисплея')
+    resolutions = models.CharField(max_length=255, verbose_name='Разрешение экрана')
+    accum_volume = models.CharField(max_length=255, verbose_name='Объём батареи')
+    ram = models.CharField(max_length=255, verbose_name='Оперативная память')
+    sd = models.BooleanField(default=True)
+    sd_volume_max = models.CharField(max_length=255, verbose_name='Максимальный объём встраиваемой памяти')
+    main_cam_mp = models.CharField(max_length=255, verbose_name='Главная камера')
+    frontal_cam_mp = models.CharField(max_length=255, verbose_name='Фронтальная камера')
+
+    def __str__(self):
+        return "{} : {}".format(self.category.name, self.title)
+
 
 class  CartProduct(models.Model):
 
@@ -70,15 +87,4 @@ class Customer(models.Model):
 
     def __str__(self):
         return "Покупатель: {} {}".format(self.user.first_name, self.user.last_name)
-
-# class Specification(models.Model):
-#
-#     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-#     object_id = models.PositiveIntegerField()
-#     name = models.CharField(max_length=255, verbose_name='Имя товара для характеристик')
-#
-#     def __str__(self):
-#         return "Характеристики для товара: {}".format(self.name)
-
-
 
