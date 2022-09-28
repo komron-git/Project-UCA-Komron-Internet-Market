@@ -1,26 +1,43 @@
-from django.core.exceptions import ValidationError
-from django.forms import ModelChoiceField, ModelForm
+from django.forms import ModelChoiceField, ModelForm, ValidationError
 from django.contrib import admin
 from .models import *
 from PIL import Image
+# from django.utils.safestring import mark_safe
 
 class NotebookAdminForm(ModelForm):
 
-    MIN_RESOLUTION = (400, 400)
 
-    def __init__(self, *args, **kwargs):
+       def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['image'].help_text = 'Загружайте изображения с  минимальным разрещением {}x{}'.format(
-            *self.MIN_RESOLUTION
-        )
+        self.fields['image'].help_text = 'При загрузке изображения с разрешением больше  {}x{} оно будет обрезано!'.format(
+                *Product.MAX_RESOLUTION
+            )
+        
 
-    def clean_image(self):
-        image = self.cleaned_data['image']
-        img = Image.open(image)
-        min_height, min_width = self.MIN_RESOLUTION
-        if img.height < min_height or img.width < min_width:
-            raise ValidationError('Разрешение изображения меньше минимального!')
-        return image
+
+
+
+       # def __init__(self, *args, **kwargs):
+       #  super().__init__(*args, **kwargs)
+       #  self.fields['image'].help_text = mark_safe(
+       #      """<span style="color:red;font-size:14px"При загрузке изображения с разрешением больше  {}x{} оно будет обрезано!</span>
+       #      """.format(
+       #          *Product.MAX_RESOLUTION
+       #      )
+       #  )
+
+    # def clean_image(self):
+    #     image = self.cleaned_data['image']
+    #     img = Image.open(image)
+    #     min_height, min_width = Product.MIN_RESOLUTION
+    #     max_height, max_width = Product.MAX_RESOLUTION
+    #     if image.size > Product.MAX_IMAGE_SIZE:
+    #         raise ValidationError('Размер изображения не должен привышать 3МБ!')
+    #     if img.height < min_height or img.width < min_width:
+    #         raise ValidationError('Разрешение изображения меньше минимального!')
+    #     if img.height < max_height or img.width < max_width:
+    #         raise ValidationError('Разрешение изображения больше максимального!')
+    #     return image
 
 class NotebookAdmin(admin.ModelAdmin):
 
