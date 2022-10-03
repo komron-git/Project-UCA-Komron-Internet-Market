@@ -1,13 +1,16 @@
-import sys
-from PIL import Image
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-from io import BytesIO
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.urls import reverse
 
 User = get_user_model()
+
+def get_product_url(obj, viewname):
+    ct_model = obj.__class__._meta.model_name
+    return reverse(viewname, kwargs={'ct_model': ct_model, 'slug': obj.slug})
+
 
 class MinResolutionerrorException(Exception):
     pass
@@ -67,30 +70,6 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
-    def save(self, *args, **kwargs):
-        # image = self.image
-        # img = Image.open(image)
-        # min_height, min_width = self.MIN_RESOLUTION
-        # max_height, max_width = self.MAX_RESOLUTION
-        # if img.height < min_height or img.width < min_width:
-        #     raise MinResolutionerrorException('Разрешение изображения меньше минимального!')
-        # if img.height > max_height or img.width > max_width:
-        #     raise MaxResolutionerrorException('Разрешение изображения больше максимального!')
-        image = self.image
-        img = Image.open(image)
-        new_img = img.convert('RGB')
-        resized_new_img = new_img.resize((200, 200), Image.ANTIALIAS)
-        filestream = BytesIO()
-        resized_new_img.save(filestream, 'JPEG', quality=90)
-        filestream.seek(0)
-        name = '{}.{}'.format(*self.image.name.split('.'))
-        print(self.image.name, name)
-        self.image = InMemoryUploadedFile(
-            filestream, 'ImageField', name, 'jpeg/image', None, sys.getsizeof(filestream), None
-        )
-        super().save(*args, **kwargs)
-
-
 class Notebook(Product):
     diagonal = models.CharField(max_length=255, verbose_name='Диагональ')
     display = models.CharField(max_length=255, verbose_name='Тип дисплея')
@@ -101,6 +80,9 @@ class Notebook(Product):
 
     def __str__(self):
         return "{} : {}".format(self.category.name, self.title)
+
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
 
 
 class TV(Product):
@@ -113,6 +95,9 @@ class TV(Product):
 
     def __str__(self):
         return "{} : {}".format(self.category.name, self.title)
+
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
 
 class Smartphone(Product):
 
@@ -129,6 +114,9 @@ class Smartphone(Product):
     def __str__(self):
         return "{} : {}".format(self.category.name, self.title)
 
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
+
 
 class Smartwatch(Product):
     brand = models.CharField(max_length=255, verbose_name='brand')
@@ -141,6 +129,9 @@ class Smartwatch(Product):
 
     def __str__(self):
         return "{} : {}".format(self.category.name, self.title)
+
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
 
 
 class  CartProduct(models.Model):
@@ -158,12 +149,15 @@ class  CartProduct(models.Model):
 
 # p=NotebookProduct.object.get(pk=1)
 # cp=CartProduct.objects.create(content_object=p)
+
 class Cart(models.Model):
 
     owner = models.ForeignKey('Customer', verbose_name='Владелец', on_delete=models.CASCADE)
     product = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')
     total_products = models.PositiveIntegerField(default=0)
     final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Общая цена')
+    in_order = models.BooleanField(default=False)
+    for_anonymous_user = model.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)
